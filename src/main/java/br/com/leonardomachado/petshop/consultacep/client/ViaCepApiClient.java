@@ -26,7 +26,7 @@ public class ViaCepApiClient implements CepApiClient {
 	public ResponseEntity<JsonNode> consultar(String cep) {
 	    try {
 	        ResponseEntity<JsonNode> response = restClient.get()
-	                .uri("/ws/{cep}/json/", cep)
+	                .uri("/ws/{cep}/json", cep)
 	                .accept(MediaType.APPLICATION_JSON)
 	                .retrieve()
 	                .toEntity(JsonNode.class);

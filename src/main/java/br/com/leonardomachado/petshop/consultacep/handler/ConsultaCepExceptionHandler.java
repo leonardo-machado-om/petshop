@@ -4,8 +4,10 @@ import java.net.URI;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import br.com.leonardomachado.petshop.consultacep.exception.CepInvalidoException;
 import br.com.leonardomachado.petshop.consultacep.exception.CepNaoEncontradoException;
@@ -55,6 +57,12 @@ public class ConsultaCepExceptionHandler {
 		problemDetail.setProperty("codigo", "CEP_NAO_ENCONTRADO");
 
 		return problemDetail;
+	}
+
+	@ExceptionHandler(NoResourceFoundException.class)
+	public ResponseEntity<Void> tratarRecursoNaoEncontrado(NoResourceFoundException exception) {
+
+		return ResponseEntity.notFound().build();
 	}
 
 	@ExceptionHandler(Exception.class)
