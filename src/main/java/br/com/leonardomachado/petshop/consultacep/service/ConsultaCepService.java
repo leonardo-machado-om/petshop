@@ -106,14 +106,14 @@ public class ConsultaCepService {
 
     private String validarEFormatarCep(String cep) {
         if (cep == null || cep.isBlank()) {
-            throw new CepInvalidoException("CEP é obrigatório.");
+            throw new CepInvalidoException("CEP é obrigatório.", cep);
         }
 
         String cepLimpo = cep.trim();
 
         if (!cepLimpo.matches("^\\d{5}-?\\d{3}$")) {
             throw new CepInvalidoException(
-                    "O CEP deve possuir exatamente 8 dígitos.");
+                    "O CEP deve possuir exatamente 8 dígitos.", cep);
         }
 
         return cepLimpo.replace("-", "");
