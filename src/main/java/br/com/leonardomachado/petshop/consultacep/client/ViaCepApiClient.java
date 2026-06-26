@@ -13,11 +13,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import br.com.leonardomachado.petshop.consultacep.exception.ConsultaCepApiException;
 
 @Component
-public class WireMockCepApiClient implements CepApiClient {
+public class ViaCepApiClient implements CepApiClient {
 
-	private RestClient restClient;
+	private final RestClient restClient;
 	
-	public WireMockCepApiClient(
+	public ViaCepApiClient(
 	        @Qualifier("cepApiRestClient") RestClient restClient) {
 	    this.restClient = restClient;
 	}

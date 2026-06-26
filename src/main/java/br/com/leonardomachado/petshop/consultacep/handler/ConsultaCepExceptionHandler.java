@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import br.com.leonardomachado.petshop.consultacep.exception.CepInvalidoException;
+import br.com.leonardomachado.petshop.consultacep.exception.CepNaoEncontradoException;
 import br.com.leonardomachado.petshop.consultacep.exception.ConsultaCepApiException;
 
 @RestControllerAdvice
@@ -33,6 +34,20 @@ public class ConsultaCepExceptionHandler {
         problemDetail.setType(
                 URI.create("https://petshop-cep-api.dev/errors/cep-provider-unavailable"));
         problemDetail.setProperty("codigo", "CEP_PROVIDER_UNAVAILABLE");
+        return problemDetail;
+    }
+    
+    @ExceptionHandler(CepNaoEncontradoException.class)
+    public ProblemDetail tratarCepNaoEncontrado(
+            CepNaoEncontradoException exception) {
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.NOT_FOUND,
+                exception.getMessage());
+
+        problemDetail.setTitle("CEP não encontrado");
+        problemDetail.setProperty("codigo", "CEP_NAO_ENCONTRADO");
+
         return problemDetail;
     }
 }
