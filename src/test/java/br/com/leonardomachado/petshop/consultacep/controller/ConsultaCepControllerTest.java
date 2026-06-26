@@ -67,6 +67,28 @@ class ConsultaCepControllerTest {
     }
 
     @Test
+    void deveRetornarInternalServerErrorQuandoOcorrerErroInesperado()
+            throws Exception {
+
+        given(consultaCepService.consultar("11320-180"))
+                .willThrow(new RuntimeException("Erro inesperado simulado"));
+
+        mockMvc.perform(get("/api/ceps/11320-180"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().contentTypeCompatibleWith(
+                        MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.status").value(500))
+                .andExpect(jsonPath("$.title")
+                        .value("Erro interno do servidor"))
+                .andExpect(jsonPath("$.detail")
+                        .value("Ocorreu um erro interno. Tente novamente mais tarde."))
+                .andExpect(jsonPath("$.type")
+                        .value("urn:petshop:cep-errors:internal-server-error"));
+
+        verify(consultaCepService).consultar("11320-180");
+    }
+    
+    @Test
     void deveRetornarBadRequestQuandoCepForInvalido() throws Exception {
         given(consultaCepService.consultar("123"))
                 .willThrow(new CepInvalidoException(
