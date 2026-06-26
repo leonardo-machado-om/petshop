@@ -6,7 +6,7 @@ spring:
     name: petshop-cep-api
 
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/petshop_db}
+    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:petshop_db}}
     username: ${DB_USERNAME:petshop_user}
     password: ${DB_PASSWORD:petshop_password}
 
@@ -27,6 +27,7 @@ spring:
 management:
   server:
     port: ${MANAGEMENT_SERVER_PORT:8081}
+    address: ${MANAGEMENT_SERVER_ADDRESS:127.0.0.1}
   endpoints:
     web:
       exposure:
@@ -38,7 +39,7 @@ management:
 info:
   app:
     name: Petshop CEP API
-    description: API de cadastro de tutores e pets com consulta de CEP mockada.
+    description: API REST para consulta de CEP em serviço externo mockado, com persistência de logs e arquitetura baseada em SOLID.
     version: 0.0.1-SNAPSHOT
 
 app:

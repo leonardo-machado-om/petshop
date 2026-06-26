@@ -19,8 +19,7 @@
 
     <name>petshop</name>
     <description>
-        API REST para cadastro de tutores e pets, com consulta de CEP mockada,
-        persistência de logs e arquitetura baseada em SOLID.
+        API REST para consulta de CEP em serviço externo mockado, com persistência de logs e arquitetura baseada em SOLID.
     </description>
 
     <properties>

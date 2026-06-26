@@ -5,15 +5,15 @@ services:
     image: postgres:16-alpine
     container_name: petshop-postgres
     environment:
-      POSTGRES_DB: petshop_db
-      POSTGRES_USER: petshop_user
-      POSTGRES_PASSWORD: petshop_password
+      POSTGRES_DB: ${DB_NAME:-petshop_db}
+      POSTGRES_USER: ${DB_USERNAME:-petshop_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-petshop_password}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U petshop_user -d petshop_db"]
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -22,7 +22,7 @@ services:
     image: wiremock/wiremock:3.13.2
     container_name: petshop-wiremock
     ports:
-      - "8082:8080"
+      - "127.0.0.1:8082:8080"
     volumes:
       - ./wiremock:/home/wiremock
     command:
