@@ -7,11 +7,25 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import br.com.leonardomachado.petshop.consultacep.exception.CepInvalidoException;
 import br.com.leonardomachado.petshop.consultacep.exception.ConsultaCepApiException;
 
 @RestControllerAdvice
 public class ConsultaCepExceptionHandler {
 
+	@ExceptionHandler(CepInvalidoException.class)
+	public ProblemDetail tratarCepInvalido(CepInvalidoException exception) {
+
+	    ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+	            HttpStatus.BAD_REQUEST,
+	            exception.getMessage());
+
+	    problemDetail.setTitle("CEP inválido");
+	    problemDetail.setProperty("codigo", "CEP_INVALIDO");
+
+	    return problemDetail;
+	}
+	
     @ExceptionHandler(ConsultaCepApiException.class)
     public ProblemDetail tratarConsultaCepApi(ConsultaCepApiException exception) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail( HttpStatus.SERVICE_UNAVAILABLE, "Não foi possível consultar o serviço externo de CEP.");
