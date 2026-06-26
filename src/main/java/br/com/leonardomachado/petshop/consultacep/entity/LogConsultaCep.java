@@ -12,6 +12,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -25,6 +27,7 @@ import lombok.NoArgsConstructor;
 public class LogConsultaCep {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false, length = 8)
@@ -48,7 +51,6 @@ public class LogConsultaCep {
     private String descricaoErro;
 
     LogConsultaCep(
-            UUID id,
             String cep,
             Instant dataHoraConsulta,
             StatusConsultaCep status,
@@ -56,7 +58,6 @@ public class LogConsultaCep {
             JsonNode jsonRetorno,
             String descricaoErro) {
 
-        this.id = id;
         this.cep = cep;
         this.dataHoraConsulta = dataHoraConsulta;
         this.status = status;

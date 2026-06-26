@@ -32,7 +32,7 @@ public class ConsultaCepExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail( HttpStatus.SERVICE_UNAVAILABLE, "Não foi possível consultar o serviço externo de CEP.");
         problemDetail.setTitle("Serviço de CEP indisponivel no momento, tente mais tarde.");
         problemDetail.setType(
-                URI.create("https://petshop-cep-api.dev/errors/cep-provider-unavailable"));
+        		URI.create("urn:petshop:errors:cep-provider-unavailable"));
         problemDetail.setProperty("codigo", "CEP_PROVIDER_UNAVAILABLE");
         return problemDetail;
     }

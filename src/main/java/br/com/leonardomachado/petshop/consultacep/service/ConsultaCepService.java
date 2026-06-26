@@ -39,7 +39,7 @@ public class ConsultaCepService {
     }
 
     public CepApiResponse consultar(String cepInformado) {
-        String cep = normalizarCep(cepInformado);
+        String cep = validarEFormatarCep(cepInformado);
         Instant dataHoraConsulta = Instant.now(clock);
 
         try {
@@ -104,20 +104,19 @@ public class ConsultaCepService {
         }
     }
 
-    private String normalizarCep(String cepInformado) {
-        if (cepInformado == null || cepInformado.isBlank()) {
-            throw new CepInvalidoException("O CEP é obrigatório.");
+    private String validarEFormatarCep(String cep) {
+        if (cep == null || cep.isBlank()) {
+            throw new CepInvalidoException("CEP é obrigatório.");
         }
 
-        String cep = cepInformado
-                .trim()
-                .replaceAll("[\\s-]", "");
+        String cepLimpo = cep.trim();
 
-        if (!cep.matches("\\d{8}")) {
+        if (!cepLimpo.matches("^\\d{5}-?\\d{3}$")) {
             throw new CepInvalidoException(
                     "O CEP deve possuir exatamente 8 dígitos.");
         }
 
-        return cep;
+        return cepLimpo.replace("-", "");
     }
+
 }

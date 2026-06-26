@@ -2,7 +2,6 @@ package br.com.leonardomachado.petshop.consultacep.entity;
 
 import java.time.Instant;
 import java.util.Objects;
-import java.util.UUID;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -21,7 +20,6 @@ public final class LogConsultaCepFactory {
             JsonNode jsonRetorno) {
 
         return new LogConsultaCep(
-                UUID.randomUUID(),
                 validarCep(cep),
                 Objects.requireNonNull(dataHoraConsulta, "A data da consulta é obrigatória."),
                 StatusConsultaCep.SUCESSO,
@@ -37,7 +35,6 @@ public final class LogConsultaCepFactory {
             JsonNode jsonRetorno) {
 
         return new LogConsultaCep(
-                UUID.randomUUID(),
                 validarCep(cep),
                 Objects.requireNonNull(dataHoraConsulta, "A data da consulta é obrigatória."),
                 StatusConsultaCep.CEP_NAO_ENCONTRADO,
@@ -53,7 +50,6 @@ public final class LogConsultaCepFactory {
             String descricaoErro) {
 
         return new LogConsultaCep(
-                UUID.randomUUID(),
                 validarCep(cep),
                 Objects.requireNonNull(dataHoraConsulta, "A data da consulta é obrigatória."),
                 StatusConsultaCep.ERRO_API_EXTERNA,

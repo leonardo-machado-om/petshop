@@ -1,0 +1,16 @@
+{
+  "name": "Consulta de CEP inexistente",
+  "request": {
+    "method": "GET",
+    "urlPath": "/ws/00000000/json/"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=UTF-8"
+    },
+    "jsonBody": {
+      "erro": true
+    }
+  }
+}
