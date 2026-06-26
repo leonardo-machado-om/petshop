@@ -1,0 +1,48 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: petshop-cep-api
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/petshop_db}
+    username: ${DB_USERNAME:petshop_user}
+    password: ${DB_PASSWORD:petshop_password}
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+        jdbc:
+          time_zone: UTC
+
+  docker:
+    compose:
+      lifecycle-management: start-only
+
+management:
+  server:
+    port: ${MANAGEMENT_SERVER_PORT:8081}
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+info:
+  app:
+    name: Petshop CEP API
+    description: API de cadastro de tutores e pets com consulta de CEP mockada.
+    version: 0.0.1-SNAPSHOT
+
+app:
+  cep:
+    base-url: ${CEP_API_BASE_URL:http://localhost:8082}
+    connect-timeout: 2s
+    read-timeout: 3s

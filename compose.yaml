@@ -1,0 +1,32 @@
+name: petshop
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: petshop-postgres
+    environment:
+      POSTGRES_DB: petshop_db
+      POSTGRES_USER: petshop_user
+      POSTGRES_PASSWORD: petshop_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U petshop_user -d petshop_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  wiremock:
+    image: wiremock/wiremock:3.13.2
+    container_name: petshop-wiremock
+    ports:
+      - "8082:8080"
+    volumes:
+      - ./wiremock:/home/wiremock
+    command:
+      - "--verbose"
+
+volumes:
+  postgres_data:

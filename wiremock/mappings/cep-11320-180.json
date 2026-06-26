@@ -1,0 +1,28 @@
+{
+  "name": "Consulta de CEP válida - São Vicente/SP",
+  "request": {
+    "method": "GET",
+    "urlPath": "/ws/11320180/json/"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=UTF-8"
+    },
+    "jsonBody": {
+	  "cep": "11320-180",
+	  "logradouro": "Rua Saldanha da Gama",
+	  "complemento": "",
+	  "unidade": "",
+	  "bairro": "Itararé",
+	  "localidade": "São Vicente",
+	  "uf": "SP",
+	  "estado": "São Paulo",
+	  "regiao": "Sudeste",
+	  "ibge": "3551009",
+	  "gia": "6579",
+	  "ddd": "13",
+	  "siafi": "7121"
+	}
+  }
+}
