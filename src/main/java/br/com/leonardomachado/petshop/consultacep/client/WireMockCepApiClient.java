@@ -2,11 +2,14 @@ package br.com.leonardomachado.petshop.consultacep.client;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 
-import br.com.leonardomachado.petshop.consultacep.dto.CepApiResponse;
+import com.fasterxml.jackson.databind.JsonNode;
+
 import br.com.leonardomachado.petshop.consultacep.exception.ConsultaCepApiException;
 
 @Component
@@ -19,26 +22,34 @@ public class WireMockCepApiClient implements CepApiClient {
 	    this.restClient = restClient;
 	}
 
-    @Override
-    public CepApiResponse consultar(String cep) {
-        try {
-            CepApiResponse resposta = restClient.get()
-                    .uri("/ws/{cep}/json/", cep)
-                    .accept(MediaType.APPLICATION_JSON)
-                    .retrieve()
-                    .body(CepApiResponse.class);
+	@Override
+	public ResponseEntity<JsonNode> consultar(String cep) {
+	    try {
+	        ResponseEntity<JsonNode> response = restClient.get()
+	                .uri("/ws/{cep}/json/", cep)
+	                .accept(MediaType.APPLICATION_JSON)
+	                .retrieve()
+	                .toEntity(JsonNode.class);
 
-            if (resposta == null) {
-                throw new ConsultaCepApiException(
-                        "A API externa retornou uma resposta vazia.");
-            }
+	        JsonNode jsonRetorno = response.getBody();
 
-            return resposta;
+	        if (jsonRetorno == null || jsonRetorno.isNull()) {
+	            throw new ConsultaCepApiException(
+	                    "A API externa retornou uma resposta vazia.");
+	        }
 
-        } catch (RestClientException exception) {
-            throw new ConsultaCepApiException(
-                    "Não foi possível consultar o serviço externo de CEP.",
-                    exception);
-        }
-    }
+	        return response;
+
+	    } catch (RestClientResponseException exception) {
+	        throw new ConsultaCepApiException(
+	                "A API externa retornou um erro.",
+	                exception.getStatusCode().value(),
+	                exception);
+
+	    } catch (RestClientException exception) {
+	        throw new ConsultaCepApiException(
+	                "Não foi possível consultar o serviço externo de CEP.",
+	                exception);
+	    }
+	}
 }

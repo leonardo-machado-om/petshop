@@ -1,7 +1,9 @@
 package br.com.leonardomachado.petshop.consultacep.client;
 
-import br.com.leonardomachado.petshop.consultacep.dto.CepApiResponse;
+import org.springframework.http.ResponseEntity;
+
+import com.fasterxml.jackson.databind.JsonNode;
 
 public interface CepApiClient {
-    CepApiResponse consultar(String cep);
+    ResponseEntity<JsonNode> consultar(String cep);
 }
