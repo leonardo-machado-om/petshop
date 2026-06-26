@@ -27,6 +27,7 @@ public class ConsultaCepExceptionHandler {
 		ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
 
 		problemDetail.setTitle("CEP inválido");
+		problemDetail.setType(URI.create("urn:petshop:cep-errors:cep-invalido"));
 		problemDetail.setProperty("codigo", "CEP_INVALIDO");
 
 		return problemDetail;
@@ -41,7 +42,7 @@ public class ConsultaCepExceptionHandler {
 		ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE,
 				"Não foi possível consultar o serviço externo de CEP.");
 		problemDetail.setTitle("Serviço de CEP indisponivel no momento, tente mais tarde.");
-		problemDetail.setType(URI.create("urn:petshop:errors:cep-provider-unavailable"));
+		problemDetail.setType(URI.create("urn:petshop:cep-errors:servidor-indisponivel"));
 		problemDetail.setProperty("codigo", "CEP_PROVIDER_UNAVAILABLE");
 		return problemDetail;
 	}
@@ -54,6 +55,7 @@ public class ConsultaCepExceptionHandler {
 		ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, exception.getMessage());
 
 		problemDetail.setTitle("CEP não encontrado");
+		problemDetail.setType(URI.create("urn:petshop:cep-errors:cep-nao-encontrado"));
 		problemDetail.setProperty("codigo", "CEP_NAO_ENCONTRADO");
 
 		return problemDetail;
@@ -74,7 +76,7 @@ public class ConsultaCepExceptionHandler {
 				"Ocorreu um erro interno. Tente novamente mais tarde.");
 
 		problemDetail.setTitle("Erro interno do servidor");
-		problemDetail.setType(URI.create("urn:petshop:errors:internal-server-error"));
+		problemDetail.setType(URI.create("urn:petshop:cep-errors:internal-server-error"));
 
 		return problemDetail;
 	}

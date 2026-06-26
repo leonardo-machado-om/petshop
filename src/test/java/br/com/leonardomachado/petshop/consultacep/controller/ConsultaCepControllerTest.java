@@ -123,7 +123,7 @@ class ConsultaCepControllerTest {
                 .andExpect(jsonPath("$.detail")
                         .value("Não foi possível consultar o serviço externo de CEP."))
                 .andExpect(jsonPath("$.type")
-                        .value("urn:petshop:errors:cep-provider-unavailable"))
+                        .value("urn:petshop:cep-errors:servidor-indisponivel"))
                 .andExpect(jsonPath("$.codigo")
                         .value("CEP_PROVIDER_UNAVAILABLE"));
 
