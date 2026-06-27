@@ -1,6 +1,8 @@
-# Petshop CEP API
+# Consulta de CEP para cadastro de endereços de entrega de um Petshop
 
-API REST para consulta de CEP em um provider externo, com auditoria persistida em PostgreSQL. O projeto foi desenvolvido para demonstrar uma solução simples, testável e pronta para evolução, aplicando conceitos básicos de SOLID e integração HTTP simulada por WireMock.
+Esta API apoia o cadastro de endereços de entrega de um petshop. Ao receber
+um CEP, consulta uma API externa e mantém um histórico das consultas para
+auditoria e análise de falhas.
 
 ## Requisitos do desafio
 
