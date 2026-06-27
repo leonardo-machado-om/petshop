@@ -1,100 +1,72 @@
 # Petshop CEP API
 
-API REST desenvolvida para consultar CEPs na API pública do **ViaCEP** e registrar o resultado de cada consulta no PostgreSQL.
+API REST para consulta de CEP em um provider externo, com auditoria persistida em PostgreSQL. O projeto foi desenvolvido para demonstrar uma solução simples, testável e pronta para evolução, aplicando conceitos básicos de SOLID e integração HTTP simulada por WireMock.
 
-A aplicação valida o CEP antes de chamar o serviço externo, transforma as respostas em contratos HTTP claros e guarda um histórico das consultas realizadas.
+## Requisitos do desafio
 
-## O que a API faz
+| Requisito | Como foi atendido |
+|---|---|
+| Desenho de solução | Diagrama de arquitetura e fluxo documentados neste README. |
+| Busca de CEP em API externa | `ViaCepApiClient` usa `RestClient` para consultar o provider configurado. |
+| API mockada | WireMock é usado no Docker Compose e nos testes automatizados. |
+| Logs em banco | Cada consulta válida gera um registro em PostgreSQL com horário, status, resposta ou erro. |
+| Conceitos básicos de SOLID | Camadas separadas, interface para o provider e dependências injetadas. |
 
-* aceita CEP com ou sem hífen;
-* valida o formato antes de chamar a API externa;
-* consulta o ViaCEP;
-* retorna os dados de endereço quando o CEP existe;
-* devolve `404` quando o CEP é válido, mas não existe;
-* grava no PostgreSQL o horário, resultado, status HTTP e dados retornados pela integração;
-* padroniza respostas de erro com `ProblemDetail`;
-* registra no log o início, fim, status e duração das requisições HTTP;
-* disponibiliza documentação interativa com Swagger/OpenAPI;
-* expõe health check local pelo Spring Boot Actuator.
+## Arquitetura
 
-## Arquitetura e fluxo
+```mermaid
+flowchart LR
+    A[Cliente / Swagger] --> B[ConsultaCepController]
+    B --> C[ConsultaCepService]
 
-```text
-Cliente / Swagger
-       |
-       v
-ConsultaCepController
-       |
-       v
-ConsultaCepService
-       |--------------------------------|
-       v                                v
-CepApiClient                  LogConsultaCepRepository
-(ViaCepApiClient)                      |
-       |                                v
-       v                           PostgreSQL
-API pública ViaCEP
+    C --> D[CepApiClient]
+    D --> E[WireMock / ViaCEP]
+
+    C --> F[LogConsultaCepRepository]
+    F --> G[(PostgreSQL)]
 ```
 
+### Fluxo principal
+
 1. O cliente chama `GET /api/ceps/{cep}`.
-2. O `ConsultaCepController` encaminha a chamada para o `ConsultaCepService`.
-3. O service valida e normaliza o CEP informado.
-4. O `ViaCepApiClient` consulta o ViaCEP.
-5. O service interpreta a resposta, registra a consulta no banco e devolve o resultado ao controller.
-6. O controller responde ao cliente.
+2. O controller delega a operação para `ConsultaCepService`.
+3. O service valida o formato do CEP e chama o provider externo por meio da abstração `CepApiClient`.
+4. A resposta é interpretada, devolvida ao cliente e registrada no PostgreSQL.
+5. CEP inexistente, indisponibilidade externa e erros inesperados são convertidos em respostas HTTP padronizadas com `ProblemDetail`.
+
+A API aceita CEP com ou sem hífen. O valor informado é mantido para a consulta externa e o CEP é armazenado no banco sem hífen, com oito dígitos, facilitando auditoria e futuras consultas por CEP.
 
 ## Tecnologias
 
-* Java 17;
-* Spring Boot;
-* Spring Web;
-* Spring Data JPA;
-* PostgreSQL;
-* Flyway;
-* Springdoc OpenAPI / Swagger UI;
-* Spring Boot Actuator;
-* Docker Compose;
-* JUnit 5 e Mockito;
-* Lombok.
+- Java 17
+- Spring Boot
+- Spring Web e `RestClient`
+- Spring Data JPA
+- PostgreSQL
+- Flyway
+- WireMock
+- Docker Compose
+- Springdoc OpenAPI / Swagger UI
+- Spring Boot Actuator
+- JUnit 5, Mockito e Testcontainers
+- Lombok
+
+## SOLID aplicado
+
+- **Single Responsibility:** o controller trata HTTP; o service coordena regra de negócio e auditoria; o client encapsula a integração; o repository persiste logs.
+- **Dependency Inversion:** `ConsultaCepService` depende de `CepApiClient`, uma abstração do provider externo, em vez de depender diretamente de `RestClient`.
+- **Open/Closed:** um novo provider compatível pode ser criado implementando `CepApiClient`, sem alterar controller ou regra principal.
+- **Testabilidade:** regras são testadas com mocks; HTTP externo é testado com WireMock; fluxo completo usa PostgreSQL isolado por Testcontainers.
 
 ## Pré-requisitos
 
-* Java 17 ou superior;
-* Docker e Docker Compose;
-* Git, caso queira clonar o projeto.
+- Java 17 ou superior
+- Docker Desktop / Docker Engine em execução
+- Maven Wrapper incluído no repositório
 
-## Configuração local
+## Como executar localmente
 
-Crie um arquivo `.env` a partir do `.env.example` na raiz do projeto.
-
-No Windows:
-
-```bat
-copy .env.example .env
-```
-
-No Linux ou macOS:
-
-```bash
-cp .env.example .env
-```
-
-Use estas variáveis para executar com o ViaCEP real:
-
-```env
-DB_HOST=localhost
-DB_PORT=5432
-DB_NAME=petshop_db
-DB_USERNAME=petshop_user
-DB_PASSWORD=petshop_password
-CEP_API_BASE_URL=https://viacep.com.br
-```
-
-A URL da integração é configurável. Dessa forma, a aplicação pode apontar futuramente para uma implementação compatível, como um mock local, sem alterar a regra de negócio.
-
-## Como executar
-
-### 1. Subir o PostgreSQL
+### 1. Subir PostgreSQL e WireMock
 
 Na raiz do projeto:
 
@@ -102,35 +74,54 @@ Na raiz do projeto:
 docker compose up -d
 ```
 
-O banco fica disponível localmente na porta `5432`.
+Serviços disponíveis localmente:
 
-### 2. Iniciar a aplicação
+| Serviço | Endereço |
+|---|---|
+| PostgreSQL | `127.0.0.1:5432` |
+| WireMock | `http://127.0.0.1:8082` |
 
-No Windows:
+### 2. Informar a URL do provider
+
+`CEP_API_BASE_URL` é obrigatória para a aplicação iniciar. Para usar o WireMock local:
+
+**PowerShell**
+
+```powershell
+$env:CEP_API_BASE_URL = "http://localhost:8082"
+.\mvnw.cmd spring-boot:run
+```
+
+**Prompt de Comando**
 
 ```bat
+set CEP_API_BASE_URL=http://localhost:8082
 mvnw.cmd spring-boot:run
 ```
 
-No Linux ou macOS:
+**Linux/macOS**
 
 ```bash
+export CEP_API_BASE_URL=http://localhost:8082
 ./mvnw spring-boot:run
 ```
 
-A API ficará disponível em:
+> O arquivo `.env` é lido pelo Docker Compose. Para iniciar a aplicação pelo Maven ou pela IDE, configure `CEP_API_BASE_URL` no terminal ou na configuração de execução.
+
+Para usar o ViaCEP real, configure:
 
 ```text
-http://localhost:8080
+CEP_API_BASE_URL=https://viacep.com.br
 ```
 
-## Swagger
+### 3. Acessos locais
 
-Com a aplicação em execução, a documentação interativa fica disponível em:
-
-```text
-http://localhost:8080/swagger-ui/index.html
-```
+| Recurso | URL |
+|---|---|
+| API | `http://localhost:8080` |
+| Swagger UI | `http://localhost:8080/swagger-ui/index.html` |
+| Health check | `http://127.0.0.1:8081/actuator/health` |
+| Informações da aplicação | `http://127.0.0.1:8081/actuator/info` |
 
 ## Endpoint
 
@@ -142,36 +133,31 @@ GET /api/ceps/{cep}
 
 Exemplos válidos:
 
-```text
-GET /api/ceps/11320-180
-GET /api/ceps/11320180
+```bash
+curl -i http://localhost:8080/api/ceps/11320180
+curl -i http://localhost:8080/api/ceps/11320-180
 ```
 
-Teste pelo terminal no Windows:
+## Contrato de respostas
 
-```bat
-curl.exe -i http://localhost:8080/api/ceps/11320180
-```
+| Situação | Status | Código |
+|---|---:|---|
+| CEP encontrado | `200 OK` | — |
+| CEP inválido | `400 Bad Request` | `CEP_INVALIDO` |
+| CEP não encontrado | `404 Not Found` | `CEP_NAO_ENCONTRADO` |
+| Provider indisponível | `503 Service Unavailable` | `CEP_PROVIDER_UNAVAILABLE` |
+| Erro inesperado | `500 Internal Server Error` | — |
 
-## Respostas da API
-
-### CEP encontrado — `200 OK`
+### Sucesso — `200 OK`
 
 ```json
 {
   "cep": "11320-180",
   "logradouro": "Rua Saldanha da Gama",
-  "complemento": "",
-  "unidade": "",
   "bairro": "Itararé",
   "localidade": "São Vicente",
   "uf": "SP",
-  "estado": "São Paulo",
-  "regiao": "Sudeste",
-  "ibge": "3551009",
-  "gia": "6579",
   "ddd": "13",
-  "siafi": "7121",
   "erro": false
 }
 ```
@@ -193,7 +179,7 @@ curl.exe -i http://localhost:8080/api/ceps/11320180
 
 ```json
 {
-  "type": "urn:petshop:cep-errors:servidor-indisponivel",
+  "type": "urn:petshop:cep-errors:cep-nao-encontrado",
   "title": "CEP não encontrado",
   "status": 404,
   "detail": "CEP 00000000 não encontrado.",
@@ -202,9 +188,9 @@ curl.exe -i http://localhost:8080/api/ceps/11320180
 }
 ```
 
-O ViaCEP retorna `200 OK` com `{"erro": true}` quando um CEP possui formato válido, mas não existe. A aplicação interpreta esse retorno e responde `404 Not Found` para quem consome a API.
+O provider pode devolver `200 OK` com `{"erro": true}` para um CEP com formato válido, mas inexistente. A API traduz esse contrato externo para `404 Not Found`.
 
-### Falha na integração externa — `503 Service Unavailable`
+### Falha do provider — `503 Service Unavailable`
 
 ```json
 {
@@ -212,7 +198,7 @@ O ViaCEP retorna `200 OK` com `{"erro": true}` quando um CEP possui formato vál
   "title": "Serviço de CEP indisponivel no momento, tente mais tarde.",
   "status": 503,
   "detail": "Não foi possível consultar o serviço externo de CEP.",
-  "instance": "/api/ceps/11320180",
+  "instance": "/api/ceps/99999-999",
   "codigo": "CEP_PROVIDER_UNAVAILABLE"
 }
 ```
@@ -224,27 +210,26 @@ O ViaCEP retorna `200 OK` com `{"erro": true}` quando um CEP possui formato vál
   "type": "urn:petshop:cep-errors:internal-server-error",
   "title": "Erro interno do servidor",
   "status": 500,
-  "instance": "/api/ceps/11320180",
-  "detail": "Ocorreu um erro interno. Tente novamente mais tarde."
+  "detail": "Ocorreu um erro interno. Tente novamente mais tarde.",
+  "instance": "/api/ceps/11320-180"
 }
 ```
 
-Recursos inexistentes, como `/favicon.ico`, retornam `404 Not Found` sem corpo, pois não fazem parte da API.
+## Auditoria das consultas
 
-## Persistência das consultas
+A migration Flyway cria a tabela `log_consulta_cep`.
 
-O Flyway cria a tabela `log_consulta_cep`.
+| Campo | Descrição |
+|---|---|
+| `id` | Identificador UUID do log |
+| `cep` | CEP normalizado com oito dígitos |
+| `dh_consulta` | Data e hora em UTC |
+| `status` | Resultado da consulta |
+| `nr_status_http` | Status recebido do provider, quando disponível |
+| `json_resposta_api` | Resposta JSON do provider em consultas concluídas |
+| `ds_erro` | Descrição do erro de integração, quando houver |
 
-Cada consulta válida gera um registro com:
-
-* CEP consultado;
-* data e hora da consulta;
-* status da operação;
-* status HTTP retornado pela integração, quando disponível;
-* JSON devolvido pela API externa para consultas concluídas;
-* mensagem do erro quando houver falha de integração.
-
-Os status registrados são:
+Status persistidos:
 
 ```text
 SUCESSO
@@ -252,93 +237,67 @@ CEP_NAO_ENCONTRADO
 ERRO_API_EXTERNA
 ```
 
-## Logs de requisição
+A aplicação grava um único log para cada consulta válida, inclusive quando o CEP não existe ou quando o provider responde com erro.
 
-As chamadas para `/api/**` passam por um interceptor que registra o início e o fim da requisição, incluindo identificador, método, URI, status e duração.
+## WireMock
 
-Exemplo:
+O WireMock permite executar e testar a aplicação sem depender da disponibilidade do ViaCEP.
 
-```text
-Iniciando requisição. requestId=..., request=GET /api/ceps/11320180
-Finalizando requisição. requestId=..., request=GET /api/ceps/11320180, status=200, duracaoMs=42
-```
+| CEP | Resposta do WireMock | Resultado da API |
+|---|---|---|
+| `11320180` | Endereço de São Vicente/SP | `200 OK` |
+| `00000000` | `{ "erro": true }` | `404 Not Found` |
+| `99999999` | `503 Service Unavailable` | `503 Service Unavailable` |
 
-Também são registrados no log:
-
-* `WARN` para CEP inválido;
-* `INFO` para CEP não encontrado;
-* `ERROR` com stack trace para falhas na integração externa;
-* `ERROR` com stack trace para erros inesperados.
-
-## Health check
-
-O Actuator é exposto apenas localmente:
+Os stubs ficam em:
 
 ```text
-http://127.0.0.1:8081/actuator/health
-http://127.0.0.1:8081/actuator/info
+src/test/resources/wiremock/consulta-cep
 ```
 
-## Testes
+## Testes automatizados
 
-Para executar todos os testes:
+Execute todos os testes com Docker em execução:
 
-No Windows:
+**Windows**
 
 ```bat
-mvnw.cmd clean test
+.\mvnw.cmd clean test
 ```
 
-No Linux ou macOS:
+**Linux/macOS**
 
 ```bash
 ./mvnw clean test
 ```
 
-A suíte cobre, entre outros cenários:
+| Classe | Objetivo |
+|---|---|
+| `ConsultaCepControllerTest` | Contrato HTTP, validações e respostas de erro do controller |
+| `ConsultaCepServiceTest` | Regras de negócio, persistência de log e tratamento de exceções |
+| `ViaCepApiClientWireMockTest` | Integração HTTP do client com WireMock |
+| `ConsultaCepIntegrationTest` | Fluxo completo: Controller → Service → Client → WireMock + PostgreSQL temporário |
 
-* consulta com sucesso;
-* CEP inválido;
-* CEP inexistente;
-* indisponibilidade da API externa;
-* respostas HTTP `200`, `400`, `404` e `503` no controller.
+O teste de integração usa `MockMvc`, WireMock e Testcontainers. Ele valida que cada cenário executa uma chamada externa e persiste exatamente um registro de auditoria.
 
-## Organização do código
+## Decisões técnicas e qualidade de engenharia
 
-```text
-controller
-└── expõe os endpoints HTTP
+- **Configuração externa obrigatória:** a URL do provider não é fixa no código; `CEP_API_BASE_URL` é obrigatória.
+- **Timeouts explícitos:** conexão em 2 segundos e leitura em 3 segundos, reduzindo risco de threads bloqueadas por uma integração indisponível.
+- **Sem retry automático:** uma consulta pode gerar auditoria; repetir chamadas externas sem estratégia de idempotência pode duplicar logs e carga no provider. Uma política de retry deve ser introduzida apenas com backoff, observabilidade e regra clara de persistência.
+- **Schema controlado:** Flyway versiona o banco e Hibernate apenas valida o mapeamento.
+- **Tempo testável:** `Clock` é injetado no service, permitindo testes determinísticos de data e hora.
+- **Erros consistentes:** `ProblemDetail` padroniza `type`, `title`, `status`, `detail`, `instance` e código de domínio.
+- **Isolamento de teste:** Testcontainers evita dependência do banco local para validar o fluxo ponta a ponta.
+- **Operação local protegida:** PostgreSQL, WireMock e Actuator ficam vinculados ao loopback durante o desenvolvimento.
 
-service
-├── valida o CEP
-├── coordena a consulta
-└── persiste o histórico da operação
+## Próximos passos para produção
 
-client
-└── encapsula a comunicação com o ViaCEP
+Os itens abaixo não são necessários para o desafio, mas mostram como a solução pode evoluir com segurança:
 
-repository
-└── persiste os logs no PostgreSQL
-
-handler
-└── transforma exceções em respostas HTTP padronizadas
-```
-
-## Decisões adotadas
-
-* O CEP é validado antes da integração externa, evitando chamadas desnecessárias.
-* O client HTTP possui timeout de conexão de 2 segundos e timeout de leitura de 3 segundos.
-* O schema é versionado pelo Flyway e validado pelo Hibernate, sem criação automática de tabelas.
-* A interface `CepApiClient` separa o contrato de integração da implementação concreta do ViaCEP.
-* O `Clock` é injetado no service para permitir testes determinísticos.
-* PostgreSQL e Actuator ficam restritos ao ambiente local durante o desenvolvimento.
-* Cada erro da API possui um `type` específico para facilitar a identificação pelo consumidor.
-
-## Melhorias futuras
-
-* adicionar rate limit ao endpoint;
-* usar Testcontainers nos testes de integração;
-* publicar métricas em uma ferramenta de observabilidade;
-* utilizar credenciais obrigatórias e banco gerenciado em produção;
-* adicionar autenticação caso a API deixe de ser pública.
-* * disponibilizar documentação para cada tipo de erro e utilizar suas URLs no campo `type` do `ProblemDetail`;
+1. **CI no GitHub Actions:** executar `./mvnw clean test` em cada push e pull request.
+2. **Métricas e alertas:** publicar contadores de sucesso, CEP não encontrado, falhas do provider e tempo da chamada externa.
+3. **Retenção de auditoria:** definir política de expurgo ou arquivamento de logs antigos, conforme necessidade de negócio e privacidade.
+4. **Rate limiting e autenticação:** proteger o endpoint caso a API seja exposta publicamente.
+5. **Retry resiliente:** somente para falhas transitórias, com backoff e estratégia que garanta um único log final por solicitação.
+6. **Observabilidade distribuída:** adicionar trace ID propagado entre logs e chamadas externas quando houver mais de um serviço.
