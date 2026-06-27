@@ -36,12 +36,12 @@ public class ConsultaCepExceptionHandler {
 	@ExceptionHandler(ConsultaCepApiException.class)
 	public ProblemDetail tratarConsultaCepApi(ConsultaCepApiException exception, HttpServletRequest request) {
 
-		log.error("Falha na consulta da API externa de CEP. uri={}, statusHttp={}", request.getRequestURI(),
-				exception.getStatusHttp(), exception);
+		log.warn("Falha na consulta da API externa de CEP. uri={}, statusHttp={}, mensagem={}", request.getRequestURI(),
+				exception.getStatusHttp(), exception.getMessage());
 
 		ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE,
 				"Não foi possível consultar o serviço externo de CEP.");
-		problemDetail.setTitle("Serviço de CEP indisponivel no momento, tente mais tarde.");
+		problemDetail.setTitle("Serviço de CEP indisponível no momento, tente mais tarde.");
 		problemDetail.setType(URI.create("urn:petshop:cep-errors:servidor-indisponivel"));
 		problemDetail.setProperty("codigo", "CEP_PROVIDER_UNAVAILABLE");
 		return problemDetail;
