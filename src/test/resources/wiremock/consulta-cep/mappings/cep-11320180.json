@@ -1,0 +1,14 @@
+{
+  "name": "Consulta de CEP válida - São Vicente/SP",
+  "request": {
+    "method": "GET",
+    "urlPath": "/ws/11320180/json/"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "Content-Type": "application/json; charset=UTF-8"
+    },
+    "bodyFileName": "cep-11320180.json"
+  }
+}

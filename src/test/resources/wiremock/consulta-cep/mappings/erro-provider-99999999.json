@@ -1,0 +1,16 @@
+{
+  "name": "Serviço de CEP temporariamente indisponível",
+  "request": {
+    "method": "GET",
+    "urlPath": "/ws/99999999/json/"
+  },
+  "response": {
+    "status": 503,
+    "headers": {
+      "Content-Type": "application/json; charset=UTF-8"
+    },
+    "jsonBody": {
+      "message": "Serviço de CEP temporariamente indisponível"
+    }
+  }
+}

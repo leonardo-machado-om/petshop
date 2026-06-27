@@ -70,10 +70,10 @@ class ConsultaCepControllerTest {
     void deveRetornarInternalServerErrorQuandoOcorrerErroInesperado()
             throws Exception {
 
-        given(consultaCepService.consultar("11320-180"))
+        given(consultaCepService.consultar("11320-140"))
                 .willThrow(new RuntimeException("Erro inesperado simulado"));
 
-        mockMvc.perform(get("/api/ceps/11320-180"))
+        mockMvc.perform(get("/api/ceps/11320-140"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().contentTypeCompatibleWith(
                         MediaType.APPLICATION_PROBLEM_JSON))
@@ -85,7 +85,7 @@ class ConsultaCepControllerTest {
                 .andExpect(jsonPath("$.type")
                         .value("urn:petshop:cep-errors:internal-server-error"));
 
-        verify(consultaCepService).consultar("11320-180");
+        verify(consultaCepService).consultar("11320-140");
     }
     
     @Test

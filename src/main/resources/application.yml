@@ -44,6 +44,6 @@ info:
 
 app:
   cep:
-    base-url: ${CEP_API_BASE_URL:http://localhost:8082}
+    base-url: ${CEP_API_BASE_URL:?CEP_API_BASE_URL é obrigatorio}
     connect-timeout: 2s
     read-timeout: 3s
